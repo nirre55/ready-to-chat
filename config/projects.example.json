@@ -1,0 +1,65 @@
+{
+  "projects": [
+    {
+      "id": "trading-main",
+      "name": "Trading Main",
+      "path": "/home/mehdi/rusty-poly-signal-runner",
+      "commands": {
+        "balance": {
+          "label": "Solde USDC",
+          "command": "cargo",
+          "args": ["run", "--release", "--bin", "balance_latency"],
+          "env": {
+            "BALANCE_LATENCY_SAMPLES": "1"
+          }
+        },
+        "summary": {
+          "label": "Trade summary",
+          "shell": "chmod +x ./trade_summary.sh && ./trade_summary.sh"
+        },
+        "errors": {
+          "label": "Dernieres erreurs",
+          "shell": "journalctl -u trading-main -n 100 --no-pager"
+        }
+      }
+    },
+    {
+      "id": "trading-fiveyear",
+      "name": "Trading Five Year",
+      "path": "/home/mehdi/rusty-poly-signal-runner-fiveyear",
+      "commands": {
+        "balance": {
+          "label": "Solde USDC",
+          "command": "cargo",
+          "args": ["run", "--release", "--bin", "balance_latency"],
+          "env": {
+            "BALANCE_LATENCY_SAMPLES": "1"
+          }
+        },
+        "summary": {
+          "label": "Trade summary",
+          "shell": "chmod +x ./trade_summary.sh && ./trade_summary.sh"
+        }
+      }
+    },
+    {
+      "id": "trading-single",
+      "name": "Trading Single",
+      "path": "/home/mehdi/rusty-poly-signal-runner-single",
+      "commands": {
+        "balance": {
+          "label": "Solde USDC",
+          "command": "cargo",
+          "args": ["run", "--release", "--bin", "balance_latency"],
+          "env": {
+            "BALANCE_LATENCY_SAMPLES": "1"
+          }
+        },
+        "summary": {
+          "label": "Trade summary",
+          "shell": "chmod +x ./trade_summary.sh && ./trade_summary.sh"
+        }
+      }
+    }
+  ]
+}

@@ -4,7 +4,6 @@ import { loadConfig } from "../src/config.js";
 const validEnv = {
   TELEGRAM_BOT_TOKEN: "token",
   TELEGRAM_ALLOWED_USER_ID: "12345",
-  BOT_REPOS: "/repo/a,/repo/b",
 };
 
 describe("loadConfig", () => {
@@ -15,7 +14,7 @@ describe("loadConfig", () => {
     expect(config.telegramAllowedUserId).toBe(12345);
     expect(config.executionMode).toBe("dry-run");
     expect(config.commandTimeoutMs).toBe(120_000);
-    expect(config.botRepos).toEqual(["/repo/a", "/repo/b"]);
+    expect(config.projectsConfigPath).toBe("config/projects.json");
   });
 
   it("rejects a missing token", () => {
@@ -30,9 +29,12 @@ describe("loadConfig", () => {
     );
   });
 
-  it("rejects an empty repository list", () => {
-    expect(() => loadConfig({ ...validEnv, BOT_REPOS: " , " })).toThrow(
-      "BOT_REPOS must contain at least one repository path",
-    );
+  it("loads a custom projects config path", () => {
+    const config = loadConfig({
+      ...validEnv,
+      PROJECTS_CONFIG_PATH: "/etc/ready-to-chat/projects.json",
+    });
+
+    expect(config.projectsConfigPath).toBe("/etc/ready-to-chat/projects.json");
   });
 });

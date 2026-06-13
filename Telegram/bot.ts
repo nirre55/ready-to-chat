@@ -3,14 +3,17 @@ import {
   getAllReports,
   getBalanceReports,
   getSummaryReports,
-  type RepoReport,
+  type ProjectReport,
 } from "../src/botReports.js";
 import { loadConfig, type AppConfig } from "../src/config.js";
-import { formatReports, HELP_MESSAGE } from "./format.js";
+import { loadProjectsConfig } from "../src/projectConfig.js";
+import { runCommandForAllProjects, runProjectCommand } from "../src/taskRunner.js";
+import { formatProjects, formatReports, HELP_MESSAGE } from "./format.js";
 
-type ReportBuilder = (config: AppConfig) => Promise<RepoReport[]>;
+type ReportBuilder = (config: AppConfig) => Promise<ProjectReport[]>;
 
 const config = loadConfig();
+const projectsConfig = loadProjectsConfig(config.projectsConfigPath);
 const bot = new Telegraf(config.telegramBotToken);
 
 bot.start(async (ctx) => {
@@ -30,15 +33,51 @@ bot.help(async (ctx) => {
 });
 
 bot.command("balance", async (ctx) => {
-  await handleReportCommand(ctx, "Je calcule les soldes USDC...", getBalanceReports);
+  await handleReportCommand(ctx, "Je calcule les soldes USDC...", (appConfig) =>
+    getBalanceReports(appConfig, projectsConfig),
+  );
 });
 
 bot.command("summary", async (ctx) => {
-  await handleReportCommand(ctx, "Je genere les trade summaries...", getSummaryReports);
+  await handleReportCommand(ctx, "Je genere les trade summaries...", (appConfig) =>
+    getSummaryReports(appConfig, projectsConfig),
+  );
 });
 
 bot.command("all", async (ctx) => {
-  await handleReportCommand(ctx, "Je genere les soldes et trade summaries...", getAllReports);
+  await handleReportCommand(ctx, "Je genere les soldes et trade summaries...", (appConfig) =>
+    getAllReports(appConfig, projectsConfig),
+  );
+});
+
+bot.command("projects", async (ctx) => {
+  if (!isAllowed(ctx.from?.id)) {
+    return;
+  }
+
+  for (const message of formatProjects(projectsConfig)) {
+    await ctx.reply(message);
+  }
+});
+
+bot.command("run", async (ctx) => {
+  if (!isAllowed(ctx.from?.id)) {
+    return;
+  }
+
+  const [target, commandId] = getCommandArgs(ctx);
+  if (!target || !commandId) {
+    await ctx.reply("Usage: /run <projet|all> <commande>\nExemple: /run trading-main balance");
+    return;
+  }
+
+  await handleReportCommand(ctx, `J'execute ${commandId} pour ${target}...`, (appConfig) => {
+    if (target === "all") {
+      return runCommandForAllProjects(appConfig, projectsConfig, commandId);
+    }
+
+    return runProjectCommand(appConfig, projectsConfig, target, commandId);
+  });
 });
 
 bot.on("text", async (ctx) => {
@@ -54,7 +93,7 @@ bot.catch((error) => {
 });
 
 bot.launch().then(() => {
-  console.log("Telegram trading bot controller is running");
+  console.log("Ready To Chat Telegram controller is running");
 });
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
@@ -84,4 +123,19 @@ async function handleReportCommand(
 
 function isAllowed(userId: number | undefined): boolean {
   return userId === config.telegramAllowedUserId;
+}
+
+function getCommandArgs(ctx: Context): string[] {
+  const text = getMessageText(ctx);
+  return text.split(/\s+/).slice(1);
+}
+
+function getMessageText(ctx: Context): string {
+  const message = ctx.message;
+
+  if (message && "text" in message && typeof message.text === "string") {
+    return message.text.trim();
+  }
+
+  return "";
 }

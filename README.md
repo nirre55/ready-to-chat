@@ -1,12 +1,14 @@
 # Ready To Chat
 
-Telegram controller for local trading bot reports.
+Telegram controller for safe local server commands.
 
-The app runs on the same Ubuntu server as the Rust bot repositories. It listens for Telegram commands from one allowed Telegram user and runs predefined local report commands.
+The app runs on the same Ubuntu server as your projects. It listens for Telegram commands from one allowed Telegram user and runs only predefined commands from `config/projects.json`.
 
 ## Commands
 
 - `/help` - show available commands
+- `/projects` - list configured projects and available command ids
+- `/run <project|all> <command>` - run a configured command
 - `/balance` - run the USDC balance report for each configured repo
 - `/summary` - run the trade summary script for each configured repo
 - `/all` - run balance and trade summary for each configured repo
@@ -32,11 +34,48 @@ Set:
 TELEGRAM_BOT_TOKEN=123456:telegram-token
 TELEGRAM_ALLOWED_USER_ID=123456789
 EXECUTION_MODE=dry-run
-BOT_REPOS=/home/mehdi/rusty-poly-signal-runner,/home/mehdi/rusty-poly-signal-runner-fiveyear,/home/mehdi/rusty-poly-signal-runner-single
 COMMAND_TIMEOUT_MS=120000
+PROJECTS_CONFIG_PATH=config/projects.json
 ```
 
 `TELEGRAM_ALLOWED_USER_ID` is required. The bot ignores every other Telegram user.
+
+Create your projects config:
+
+```bash
+cp config/projects.example.json config/projects.json
+nano config/projects.json
+```
+
+Example project:
+
+```json
+{
+  "id": "my-app",
+  "name": "My App",
+  "path": "/home/mehdi/my-app",
+  "commands": {
+    "errors": {
+      "label": "Dernieres erreurs",
+      "shell": "tail -n 100 logs/error.log"
+    },
+    "status": {
+      "label": "Service status",
+      "shell": "systemctl status my-app --no-pager"
+    }
+  }
+}
+```
+
+Telegram can select `my-app` and `errors`, but it cannot send arbitrary shell text.
+
+Examples:
+
+```text
+/projects
+/run my-app errors
+/run all balance
+```
 
 ## Run
 
@@ -102,6 +141,12 @@ journalctl -u ready-to-chat -f
 npm test
 npm run build
 ```
+
+## Add A New Server Or Project
+
+Copy the project to the new server, install dependencies, create `.env`, then edit `config/projects.json` for that server's local project paths and allowed commands.
+
+Keep sensitive or server-specific details in `config/projects.json`; that file is ignored by git.
 
 ## Future Discord Support
 

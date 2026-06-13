@@ -4,14 +4,15 @@ export type AppConfig = {
   telegramBotToken: string;
   telegramAllowedUserId: number;
   executionMode: string;
-  botRepos: string[];
   commandTimeoutMs: number;
+  projectsConfigPath: string;
 };
 
 type Env = NodeJS.ProcessEnv;
 
 const DEFAULT_EXECUTION_MODE = "dry-run";
 const DEFAULT_COMMAND_TIMEOUT_MS = 120_000;
+const DEFAULT_PROJECTS_CONFIG_PATH = "config/projects.json";
 
 export function loadConfig(env: Env = process.env): AppConfig {
   const telegramBotToken = requiredString(env.TELEGRAM_BOT_TOKEN, "TELEGRAM_BOT_TOKEN");
@@ -19,7 +20,6 @@ export function loadConfig(env: Env = process.env): AppConfig {
     env.TELEGRAM_ALLOWED_USER_ID,
     "TELEGRAM_ALLOWED_USER_ID",
   );
-  const botRepos = parseRepos(env.BOT_REPOS);
   const commandTimeoutMs = optionalPositiveNumber(
     env.COMMAND_TIMEOUT_MS,
     "COMMAND_TIMEOUT_MS",
@@ -30,8 +30,8 @@ export function loadConfig(env: Env = process.env): AppConfig {
     telegramBotToken,
     telegramAllowedUserId,
     executionMode: env.EXECUTION_MODE?.trim() || DEFAULT_EXECUTION_MODE,
-    botRepos,
     commandTimeoutMs,
+    projectsConfigPath: env.PROJECTS_CONFIG_PATH?.trim() || DEFAULT_PROJECTS_CONFIG_PATH,
   };
 }
 
@@ -71,17 +71,4 @@ function optionalPositiveNumber(
   }
 
   return parsed;
-}
-
-function parseRepos(value: string | undefined): string[] {
-  const repos = value
-    ?.split(",")
-    .map((repo) => repo.trim())
-    .filter(Boolean);
-
-  if (!repos?.length) {
-    throw new Error("BOT_REPOS must contain at least one repository path");
-  }
-
-  return repos;
 }
