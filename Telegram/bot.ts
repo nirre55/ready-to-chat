@@ -21,7 +21,7 @@ bot.start(async (ctx) => {
     return;
   }
 
-  await ctx.reply(HELP_MESSAGE);
+  await replyText(ctx, HELP_MESSAGE);
 });
 
 bot.help(async (ctx) => {
@@ -29,7 +29,7 @@ bot.help(async (ctx) => {
     return;
   }
 
-  await ctx.reply(HELP_MESSAGE);
+  await replyText(ctx, HELP_MESSAGE);
 });
 
 bot.command("balance", async (ctx) => {
@@ -56,7 +56,7 @@ bot.command("projects", async (ctx) => {
   }
 
   for (const message of formatProjects(projectsConfig)) {
-    await ctx.reply(message);
+    await replyHtml(ctx, message);
   }
 });
 
@@ -67,7 +67,7 @@ bot.command("run", async (ctx) => {
 
   const [target, commandId] = getCommandArgs(ctx);
   if (!target || !commandId) {
-    await ctx.reply("Usage: /run <projet|all> <commande>\nExemple: /run trading-main balance");
+    await replyText(ctx, "Usage: /run <projet|all> <commande>\nExemple: /run trading-main balance");
     return;
   }
 
@@ -85,7 +85,7 @@ bot.on("text", async (ctx) => {
     return;
   }
 
-  await ctx.reply(HELP_MESSAGE);
+  await replyText(ctx, HELP_MESSAGE);
 });
 
 bot.catch((error) => {
@@ -108,16 +108,16 @@ async function handleReportCommand(
     return;
   }
 
-  await ctx.reply(progressMessage);
+  await replyText(ctx, progressMessage);
 
   try {
     const reports = await buildReports(config);
     for (const message of formatReports(reports)) {
-      await ctx.reply(message);
+      await replyHtml(ctx, message);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await ctx.reply(`Erreur pendant l'execution: ${message}`);
+    await replyText(ctx, `Erreur pendant l'execution: ${message}`);
   }
 }
 
@@ -138,4 +138,12 @@ function getMessageText(ctx: Context): string {
   }
 
   return "";
+}
+
+function replyText(ctx: Context, message: string): Promise<unknown> {
+  return ctx.reply(message);
+}
+
+function replyHtml(ctx: Context, message: string): Promise<unknown> {
+  return ctx.reply(message, { parse_mode: "HTML" });
 }

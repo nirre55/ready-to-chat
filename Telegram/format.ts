@@ -3,6 +3,7 @@ import type { ProjectsConfig } from "../src/projectConfig.js";
 import type { ProjectTaskReport, TaskResult } from "../src/taskRunner.js";
 
 const TELEGRAM_SAFE_MESSAGE_LENGTH = 3_800;
+const TELEGRAM_SAFE_PRE_LENGTH = 3_200;
 
 export const HELP_MESSAGE = [
   "Commandes disponibles:",
@@ -17,9 +18,12 @@ export function formatProjects(projectsConfig: ProjectsConfig): string[] {
   const fullText = projectsConfig.projects
     .map((project) => {
       const commands = Object.keys(project.commands).join(", ");
-      return [`${project.id} - ${project.name}`, `path: ${project.path}`, `commands: ${commands}`].join(
-        "\n",
-      );
+      return [
+        `<b>${escapeHtml(project.name)}</b>`,
+        `<code>${escapeHtml(project.id)}</code>`,
+        `path: <code>${escapeHtml(project.path)}</code>`,
+        `commands: <code>${escapeHtml(commands)}</code>`,
+      ].join("\n");
     })
     .join("\n\n");
 
@@ -27,8 +31,7 @@ export function formatProjects(projectsConfig: ProjectsConfig): string[] {
 }
 
 export function formatReports(reports: ProjectTaskReport[]): string[] {
-  const fullText = reports.map(formatProjectReport).join("\n\n");
-  return splitTelegramMessage(fullText);
+  return reports.flatMap((report) => splitTelegramMessage(formatProjectReport(report)));
 }
 
 export function splitTelegramMessage(text: string, limit = TELEGRAM_SAFE_MESSAGE_LENGTH): string[] {
@@ -60,36 +63,43 @@ export function splitTelegramMessage(text: string, limit = TELEGRAM_SAFE_MESSAGE
 function formatProjectReport(report: ProjectTaskReport): string {
   const sections = report.sections.map(formatSection).join("\n\n");
   return [
-    `Project: ${report.projectId} - ${report.projectName}`,
-    `Path: ${report.projectPath}`,
-    "========================================",
+    `<b>${escapeHtml(report.projectName)}</b>`,
+    `<code>${escapeHtml(report.projectId)}</code>`,
+    `path: <code>${escapeHtml(report.projectPath)}</code>`,
+    "",
     sections,
   ].join("\n");
 }
 
 function formatSection(section: TaskResult): string {
   if (section.status === "skipped") {
-    return `${section.commandLabel}: SKIPPED\n${section.skippedReason ?? "Command skipped"}`;
+    return [
+      `<b>${escapeHtml(section.commandLabel)}</b>: <code>SKIPPED</code>`,
+      escapeHtml(section.skippedReason ?? "Command skipped"),
+    ].join("\n");
   }
 
   const result = section.result;
   if (!result) {
-    return `${section.commandLabel}: ERROR\nMissing command result`;
+    return `<b>${escapeHtml(section.commandLabel)}</b>: <code>ERROR</code>\nMissing command result`;
   }
 
   const status = getStatus(result);
-  const pieces = [`${section.commandLabel}: ${status}`];
+  const pieces = [`<b>${escapeHtml(section.commandLabel)}</b>: <code>${escapeHtml(status)}</code>`];
+  const compactBalance = section.commandId === "balance" ? formatCompactBalance(result.stdout) : null;
 
-  if (result.stdout.trim()) {
-    pieces.push(result.stdout.trim());
+  if (compactBalance) {
+    pieces.push(`<pre>${escapeHtml(compactBalance)}</pre>`);
+  } else if (result.stdout.trim()) {
+    pieces.push(formatPre(result.stdout));
   }
 
-  if (result.stderr.trim()) {
-    pieces.push(`stderr:\n${result.stderr.trim()}`);
+  if (shouldShowStderr(result) && result.stderr.trim()) {
+    pieces.push(`<b>stderr</b>\n${formatPre(result.stderr)}`);
   }
 
   if (result.error) {
-    pieces.push(`error:\n${result.error}`);
+    pieces.push(`<b>error</b>\n${formatPre(result.error)}`);
   }
 
   return pieces.join("\n");
@@ -105,4 +115,36 @@ function getStatus(result: CommandResult): string {
   }
 
   return result.exitCode === 0 ? "OK" : `FAILED (${result.exitCode ?? "unknown"})`;
+}
+
+function shouldShowStderr(result: CommandResult): boolean {
+  return result.exitCode !== 0 || result.timedOut || Boolean(result.error);
+}
+
+function formatCompactBalance(stdout: string): string | null {
+  const balance = stdout.match(/balance=([^\s]+)/)?.[1];
+  const latency = stdout.match(/latency=([^\s]+)/)?.[1];
+
+  if (!balance && !latency) {
+    return null;
+  }
+
+  return [balance, latency].filter(Boolean).join(" | ");
+}
+
+function formatPre(value: string): string {
+  const trimmed = value.trim();
+  const output =
+    trimmed.length > TELEGRAM_SAFE_PRE_LENGTH
+      ? `${trimmed.slice(0, TELEGRAM_SAFE_PRE_LENGTH)}\n\n[output coupe]`
+      : trimmed;
+
+  return `<pre>${escapeHtml(output)}</pre>`;
+}
+
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
