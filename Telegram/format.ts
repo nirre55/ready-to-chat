@@ -1,6 +1,7 @@
 import type { CommandResult } from "../src/commandRunner.js";
 import type { ProjectsConfig } from "../src/projectConfig.js";
 import type { ProjectTaskReport, TaskResult } from "../src/taskRunner.js";
+import { formatTradeSummary } from "./tradeSummary.js";
 
 const TELEGRAM_SAFE_MESSAGE_LENGTH = 3_800;
 const TELEGRAM_SAFE_PRE_LENGTH = 3_200;
@@ -87,9 +88,12 @@ function formatSection(section: TaskResult): string {
   const status = getStatus(result);
   const pieces = [`<b>${escapeHtml(section.commandLabel)}</b>: <code>${escapeHtml(status)}</code>`];
   const compactBalance = section.commandId === "balance" ? formatCompactBalance(result.stdout) : null;
+  const compactSummary = section.commandId === "summary" ? formatTradeSummary(result.stdout) : null;
 
   if (compactBalance) {
     pieces.push(`<pre>${escapeHtml(compactBalance)}</pre>`);
+  } else if (compactSummary) {
+    pieces.push(formatPre(compactSummary));
   } else if (result.stdout.trim()) {
     pieces.push(formatPre(result.stdout));
   }

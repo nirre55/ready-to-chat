@@ -85,6 +85,38 @@ describe("formatReports", () => {
     expect(messages[0]).toContain("<b>stderr</b>");
     expect(messages[0]).toContain("cannot open log");
   });
+
+  it("formats summary output as compact strategy blocks", () => {
+    const messages = formatReports([
+      {
+        projectId: "trading-main",
+        projectName: "Trading Main",
+        projectPath: "/repo/trading-main",
+        sections: [
+          {
+            projectId: "trading-main",
+            projectName: "Trading Main",
+            projectPath: "/repo/trading-main",
+            commandId: "summary",
+            commandLabel: "Trade summary",
+            status: "completed",
+            result: {
+              command: "./trade_summary.sh",
+              cwd: "/repo/trading-main",
+              exitCode: 0,
+              stdout:
+                "btc_15m_ensemble 16 10 5 66.7% 0 0 1 0.5575 0.5475 0.81 0.50\nTOTAL 16 10 5 66.7% 0 0 1 0.5575 0.5475 0.81 0.50",
+              stderr: "",
+              timedOut: false,
+            },
+          },
+        ],
+      },
+    ]);
+
+    expect(messages[0]).toContain("total 16 | win 10 | loss 5 | winrate 66.7%");
+    expect(messages[0]).toContain("avg +0.5575 | avg -0.5475 | rr 0.81 | be 0.50");
+  });
 });
 
 describe("escapeHtml", () => {
