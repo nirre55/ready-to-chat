@@ -2,6 +2,7 @@ import { Context, Telegraf } from "telegraf";
 import {
   getAllReports,
   getBalanceReports,
+  getHistoryReports,
   getSummaryReports,
   type ProjectReport,
 } from "../src/botReports.js";
@@ -41,6 +42,12 @@ bot.command("balance", async (ctx) => {
 bot.command("summary", async (ctx) => {
   await handleReportCommand(ctx, "Je genere les trade summaries...", (appConfig) =>
     getSummaryReports(appConfig, projectsConfig),
+  );
+});
+
+bot.command("history", async (ctx) => {
+  await handleReportCommand(ctx, "Je genere les historiques de trades...", (appConfig) =>
+    getHistoryReports(appConfig, projectsConfig),
   );
 });
 

@@ -17,6 +17,10 @@
           "label": "Trade summary",
           "shell": "chmod +x ./trade_summary.sh && ./trade_summary.sh"
         },
+        "history": {
+          "label": "Historique global",
+          "shell": "chmod +x ./trade_history_summary.sh && ./trade_history_summary.sh"
+        },
         "errors": {
           "label": "Dernieres erreurs",
           "shell": "journalctl -u trading-main -n 100 --no-pager"
@@ -39,6 +43,10 @@
         "summary": {
           "label": "Trade summary",
           "shell": "chmod +x ./trade_summary.sh && ./trade_summary.sh"
+        },
+        "history": {
+          "label": "Historique global",
+          "shell": "chmod +x ./trade_history_summary.sh && ./trade_history_summary.sh"
         }
       }
     },
@@ -58,6 +66,10 @@
         "summary": {
           "label": "Trade summary",
           "shell": "chmod +x ./trade_summary.sh && ./trade_summary.sh"
+        },
+        "history": {
+          "label": "Historique global",
+          "shell": "chmod +x ./trade_history_summary.sh && ./trade_history_summary.sh"
         }
       }
     }

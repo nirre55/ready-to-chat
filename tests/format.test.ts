@@ -117,6 +117,45 @@ describe("formatReports", () => {
     expect(messages[0]).toContain("total 16 | win 10 | loss 5 | winrate 66.7%");
     expect(messages[0]).toContain("avg +0.5575 | avg -0.5475 | rr 0.81 | be 0.50");
   });
+
+  it("formats trade history output as a compact block", () => {
+    const messages = formatReports([
+      {
+        projectId: "trading-main",
+        projectName: "Trading Main",
+        projectPath: "/repo/trading-main",
+        sections: [
+          {
+            projectId: "trading-main",
+            projectName: "Trading Main",
+            projectPath: "/repo/trading-main",
+            commandId: "history",
+            commandLabel: "Historique global",
+            status: "completed",
+            result: {
+              command: "./trade_history_summary.sh",
+              cwd: "/repo/trading-main",
+              exitCode: 0,
+              stdout: [
+                "Premier trade : 2026-06-05 02:59:59 UTC",
+                "Temps ecoule  : 15 jours, 12 heures",
+                "Strategie     : five_year_70pct_btc_5m",
+                "Date          : 2026-06-20 15:24:59 UTC",
+                "Prix execute  : 0.57",
+                "Shares achetes: 5.02",
+              ].join("\n"),
+              stderr: "",
+              timedOut: false,
+            },
+          },
+        ],
+      },
+    ]);
+
+    expect(messages[0]).toContain("Premier trade");
+    expect(messages[0]).toContain("Strategie : five_year_70pct_btc_5m");
+    expect(messages[0]).not.toContain("Temps ecoule  :");
+  });
 });
 
 describe("escapeHtml", () => {

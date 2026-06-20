@@ -1,6 +1,7 @@
 import type { CommandResult } from "../src/commandRunner.js";
 import type { ProjectsConfig } from "../src/projectConfig.js";
 import type { ProjectTaskReport, TaskResult } from "../src/taskRunner.js";
+import { formatTradeHistory } from "./tradeHistory.js";
 import { formatTradeSummary } from "./tradeSummary.js";
 
 const TELEGRAM_SAFE_MESSAGE_LENGTH = 3_800;
@@ -12,6 +13,7 @@ export const HELP_MESSAGE = [
   "/run <projet|all> <commande> - Execute une commande configuree",
   "/balance - Solde USDC de chaque bot",
   "/summary - Trade summary de chaque bot",
+  "/history - Historique global de chaque bot",
   "/all - Solde + trade summary de chaque bot",
 ].join("\n");
 
@@ -89,11 +91,14 @@ function formatSection(section: TaskResult): string {
   const pieces = [`<b>${escapeHtml(section.commandLabel)}</b>: <code>${escapeHtml(status)}</code>`];
   const compactBalance = section.commandId === "balance" ? formatCompactBalance(result.stdout) : null;
   const compactSummary = section.commandId === "summary" ? formatTradeSummary(result.stdout) : null;
+  const compactHistory = section.commandId === "history" ? formatTradeHistory(result.stdout) : null;
 
   if (compactBalance) {
     pieces.push(`<pre>${escapeHtml(compactBalance)}</pre>`);
   } else if (compactSummary) {
     pieces.push(formatPre(compactSummary));
+  } else if (compactHistory) {
+    pieces.push(formatPre(compactHistory));
   } else if (result.stdout.trim()) {
     pieces.push(formatPre(result.stdout));
   }
