@@ -29,6 +29,13 @@ export function getHistoryReports(
   return runCommandForAllProjects(config, projectsConfig, "history");
 }
 
+export function getErrorReports(
+  config: AppConfig,
+  projectsConfig: ProjectsConfig,
+): Promise<ProjectReport[]> {
+  return runCommandForAllProjects(config, projectsConfig, "errors");
+}
+
 export function getAllReports(
   config: AppConfig,
   projectsConfig: ProjectsConfig,

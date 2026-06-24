@@ -12,6 +12,8 @@ The app runs on the same Ubuntu server as your projects. It listens for Telegram
 - `/balance` - run the USDC balance report for each configured repo
 - `/summary` - run the trade summary script for each configured repo
 - `/history` - run the global trade history script for each configured repo
+- `/erreurs` - show the last five configured errors for each repo
+- `/errors` - English alias for `/erreurs`
 - `/all` - run balance and trade summary for each configured repo
 
 ## Setup
@@ -77,6 +79,7 @@ Examples:
 /run my-app errors
 /run all balance
 /history
+/erreurs
 ```
 
 For trading projects, configure:
@@ -85,6 +88,10 @@ For trading projects, configure:
 "history": {
   "label": "Historique global",
   "shell": "chmod +x ./trade_history_summary.sh && ./trade_history_summary.sh"
+},
+"errors": {
+  "label": "Dernieres erreurs",
+  "shell": "grep -h \"ERROR\" logs/supervisor/*.console.log | sort | tail -n 5"
 }
 ```
 

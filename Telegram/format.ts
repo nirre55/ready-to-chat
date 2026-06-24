@@ -14,6 +14,7 @@ export const HELP_MESSAGE = [
   "/balance - Solde USDC de chaque bot",
   "/summary - Trade summary de chaque bot",
   "/history - Historique global de chaque bot",
+  "/erreurs - 5 dernieres erreurs de chaque bot",
   "/all - Solde + trade summary de chaque bot",
 ].join("\n");
 

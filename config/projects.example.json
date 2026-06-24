@@ -23,7 +23,7 @@
         },
         "errors": {
           "label": "Dernieres erreurs",
-          "shell": "journalctl -u trading-main -n 100 --no-pager"
+          "shell": "grep -h \"ERROR\" logs/supervisor/*.console.log | sort | tail -n 5"
         }
       }
     },
@@ -47,6 +47,10 @@
         "history": {
           "label": "Historique global",
           "shell": "chmod +x ./trade_history_summary.sh && ./trade_history_summary.sh"
+        },
+        "errors": {
+          "label": "Dernieres erreurs",
+          "shell": "grep -h \"ERROR\" logs/supervisor/*.console.log | sort | tail -n 5"
         }
       }
     },
@@ -70,6 +74,10 @@
         "history": {
           "label": "Historique global",
           "shell": "chmod +x ./trade_history_summary.sh && ./trade_history_summary.sh"
+        },
+        "errors": {
+          "label": "Dernieres erreurs",
+          "shell": "grep -h \"ERROR\" logs/supervisor/*.console.log | sort | tail -n 5"
         }
       }
     }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { escapeHtml, formatReports, splitTelegramMessage } from "../Telegram/format.js";
+import { HELP_MESSAGE } from "../Telegram/format.js";
 
 describe("splitTelegramMessage", () => {
   it("keeps short messages unchanged", () => {
@@ -161,5 +162,11 @@ describe("formatReports", () => {
 describe("escapeHtml", () => {
   it("escapes Telegram HTML control characters", () => {
     expect(escapeHtml("<tag>&value</tag>")).toBe("&lt;tag&gt;&amp;value&lt;/tag&gt;");
+  });
+});
+
+describe("HELP_MESSAGE", () => {
+  it("mentions the errors shortcut", () => {
+    expect(HELP_MESSAGE).toContain("/erreurs");
   });
 });
